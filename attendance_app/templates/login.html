@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Employee Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(120deg, #4e73df, #1cc88a);
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .login-box {
+        background: #fff;
+        padding: 30px;
+        width: 320px;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+      .login-box h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .login-box input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+      }
+      .login-box button {
+        width: 100%;
+        padding: 10px;
+        background: #4e73df;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+      .login-box button:hover {
+        background: #2e59d9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-box">
+      <h2>Employee Login</h2>
+      <form method="post">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Username" required />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </body>
+</html>

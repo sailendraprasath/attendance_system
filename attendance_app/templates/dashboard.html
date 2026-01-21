@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Employee Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f6f9;
+      }
+      .header {
+        background: #4e73df;
+        color: white;
+        padding: 15px;
+        text-align: center;
+      }
+      .card {
+        background: white;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      }
+      .row {
+        margin: 10px 0;
+        font-size: 15px;
+      }
+      .label {
+        font-weight: bold;
+        color: #555;
+      }
+      .value {
+        float: right;
+      }
+      .status {
+        padding: 5px 10px;
+        border-radius: 5px;
+        color: white;
+        font-size: 13px;
+      }
+      .present {
+        background: #1cc88a;
+      }
+      .late {
+        background: #e74a3b;
+      }
+      .logout-btn {
+        width: 100%;
+        padding: 10px;
+        margin-top: 20px;
+        background: #e74a3b;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .logout-btn:hover {
+        background: #c0392b;
+      }
+      .clear {
+        clear: both;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        background: #f1f1f1;
+      }
+      a {
+        display: inline-block;
+        margin-top: 15px;
+        text-decoration: none;
+        color: #4e73df;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+      <h2>Welcome, {{ request.user.username }}</h2>
+    </div>
+
+    <div class="card">
+      <!-- Your Attendance Info -->
+      <div class="row">
+        <span class="label">Date</span>
+        <span class="value">{{ attendance.date }}</span>
+        <div class="clear"></div>
+      </div>
+
+      <div class="row">
+        <span class="label">Day</span>
+        <span class="value">{{ attendance.day }}</span>
+        <div class="clear"></div>
+      </div>
+
+      <div class="row">
+        <span class="label">Check In</span>
+        <span class="value">{{ attendance.check_in|date:"H:i:s" }}</span>
+        <div class="clear"></div>
+      </div>
+
+      <div class="row">
+        <span class="label">Status</span>
+        <span
+          class="status {% if attendance.status == 'Late' %}late{% else %}present{% endif %}"
+        >
+          {{ attendance.status }}
+        </span>
+      </div>
+
+      <!-- Superuser Dashboard -->
+      {% if request.user.is_superuser %}
+      <h3>Superuser Dashboard</h3>
+      <p>Total users logged in today: {{ logged_in_users_count }}</p>
+
+      <table>
+        <tr>
+          <th>Employee</th>
+          <th>Date</th>
+          <th>Day</th>
+          <th>Check In</th>
+          <th>Check Out</th>
+          <th>Status</th>
+        </tr>
+        {% for a in all_attendance %}
+        <tr>
+          <td>{{ a.employee.username }}</td>
+          <td>{{ a.date }}</td>
+          <td>{{ a.day }}</td>
+          <td>{{ a.check_in|date:"H:i:s" }}</td>
+          <td>
+            {% if a.check_out %} {{ a.check_out|date:"H:i:s" }} {% endif %}
+          </td>
+          <td>{{ a.status }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      <a href="{% url 'export_excel' %}">Download Excel</a>
+      {% endif %}
+
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+    </div>
+  </body>
+</html>
