@@ -1,9 +1,11 @@
 
 from pathlib import Path
+import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'change-me'
-DEBUG = True
+SECRET_KEY = os.environ.get("SECRET_KEY", "unsafe-secret-key")
+DEBUG = False
+
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -14,6 +16,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',  # <-- must be here
