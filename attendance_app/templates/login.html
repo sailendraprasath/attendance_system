@@ -1,63 +1,162 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Employee Login</title>
+    <title>Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
     <style>
+      /* Body + fancy background */
       body {
+        min-height: 100vh;
         margin: 0;
-        font-family: Arial, sans-serif;
-        background: linear-gradient(120deg, #4e73df, #1cc88a);
-        height: 100vh;
+        position: relative;
+        background: #fff; /* fallback */
+        overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
       }
-      .login-box {
-        background: #fff;
-        padding: 30px;
-        width: 320px;
-        border-radius: 10px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+      /* Grid + radial overlay */
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+          linear-gradient(to right, #4f4f4f2e 1px, transparent 1px),
+          linear-gradient(to bottom, #4f4f4f2e 1px, transparent 1px);
+        background-size: 14px 24px;
+        mask-image: radial-gradient(
+          ellipse 80% 50% at 50% 0%,
+          #000 70%,
+          transparent 110%
+        );
+        -webkit-mask-image: radial-gradient(
+          ellipse 80% 50% at 50% 0%,
+          #000 70%,
+          transparent 110%
+        );
+        pointer-events: none;
+        z-index: 0;
       }
-      .login-box h2 {
-        text-align: center;
-        margin-bottom: 20px;
-      }
-      .login-box input {
-        width: 100%;
-        padding: 10px;
-        margin: 10px 0;
-      }
-      .login-box button {
-        width: 100%;
-        padding: 10px;
-        background: #4e73df;
-        color: #fff;
+
+      /* Login card */
+      .login-card {
         border: none;
-        cursor: pointer;
-        border-radius: 5px;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.068);
+        background: linear-gradient(135deg, #000000a4, #f5f7fa);
+        position: relative;
+        z-index: 1; /* above background */
       }
-      .login-box button:hover {
-        background: #2e59d9;
+
+      .login-card .card-body {
+        padding: 2.5rem;
+      }
+
+      .logo img {
+        width: 250px;
+        height: 150px;
+        border-radius: 10%;
+        margin-bottom: 1rem;
+      }
+
+      .form-control {
+        background-color: #fcf6f6;
+        color: #000000;
+        border: 1px solid #555;
+      }
+
+      .form-control::placeholder {
+        color: #aaa;
+      }
+
+      .form-control:focus {
+        background-color: #ffffff;
+        color: #000000;
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.4);
+      }
+
+      .login-head {
+        color: rgb(57, 54, 54);
+        font-size: xx-large;
+      }
+
+      .btn-primary {
+        background-color: #4e73df;
+        border: none;
+      }
+
+      .btn-primary:hover {
+        background-color: #2e59d9;
       }
     </style>
   </head>
+
   <body>
-    <div class="login-box">
-      <h2>Employee Login</h2>
-      <form method="post">
-        {% csrf_token %}
-        <input type="text" name="username" placeholder="Username" required />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+          <div class="card login-card">
+            <div class="card-body text-center">
+              <!-- Logo -->
+              <div class="logo">
+                <img
+                  src="{% static 'images/Cloudrule_Logo.jpeg' %}"
+                  alt="CloudRule Logo"
+                />
+              </div>
+
+              <h4 class="mb-4 login-head fw-bold">Login</h4>
+
+              <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                  <input
+                    type="text"
+                    name="username"
+                    class="form-control form-control-lg"
+                    placeholder="Username"
+                    required
+                  />
+                </div>
+
+                <div class="mb-3">
+                  <input
+                    type="password"
+                    name="password"
+                    class="form-control form-control-lg"
+                    placeholder="Password"
+                    required
+                  />
+                </div>
+
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary btn-lg">
+                    Login
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Bootstrap JS (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

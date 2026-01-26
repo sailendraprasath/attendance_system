@@ -2,162 +2,313 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Employee Dashboard</title>
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <style>
       body {
-        margin: 0;
         font-family: Arial, sans-serif;
-        background: #f4f6f9;
+        margin: 0;
       }
+
+      /* Dashboard Background */
+      .dashboard-body {
+        position: relative;
+        min-height: 100vh;
+        background: #fff; /* fallback */
+        overflow: hidden;
+      }
+
+      /* Grid + radial overlay */
+      .dashboard-body::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: 
+          linear-gradient(to right, #4f4f4f2e 1px, transparent 1px),
+          linear-gradient(to bottom, #4f4f4f2e 1px, transparent 1px);
+        background-size: 14px 24px;
+        mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, #000 70%, transparent 110%);
+        -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, #000 70%, transparent 110%);
+        pointer-events: none; /* allow clicking through */
+      }
+  #attendanceChart {
+    background: #ffffffa2; /* translucent background */
+    border-radius: 10px;
+    padding: 10px;
+  }
       .header {
-        background: #4e73df;
-        color: white;
-        padding: 15px;
+        background: linear-gradient(95deg, #f5f7fa, #000);
+        color: #fff;
+        padding: 15px 20px;
+        position: relative;
+        z-index: 1; /* above overlay */
+      }
+
+      .header h2 {
+        margin: 0;
         text-align: center;
       }
+
+      .admin-actions {
+        position: absolute;
+        right: 20px;
+        top: 12px;
+      }
+
+      .admin-actions form {
+        display: inline;
+      }
+
+      .admin-actions button {
+        background: #e74a3b;
+        color: #fff;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .admin-actions button:hover {
+        background: #c0392b;
+      }
+
       .card {
-        background: white;
-        max-width: 800px;
+        background: #ffffffa2;
+        max-width: 1000px;
         margin: 40px auto;
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        position: relative;
+        z-index: 1; /* above overlay */
       }
-      .row {
-        margin: 10px 0;
-        font-size: 15px;
-      }
-      .label {
-        font-weight: bold;
-        color: #555;
-      }
-      .value {
-        float: right;
-      }
-      .status {
-        padding: 5px 10px;
-        border-radius: 5px;
-        color: white;
-        font-size: 13px;
-      }
-      .present {
-        background: #1cc88a;
-      }
-      .late {
-        background: #e74a3b;
-      }
-      .logout-btn {
-        width: 100%;
-        padding: 10px;
-        margin-top: 20px;
-        background: #e74a3b;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 15px;
-        cursor: pointer;
-      }
-      .logout-btn:hover {
-        background: #c0392b;
-      }
-      .clear {
-        clear: both;
-      }
+
       table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
       }
-      th,
-      td {
+
+      th, td {
         border: 1px solid #ccc;
         padding: 8px;
         text-align: center;
+        font-size: 14px;
       }
+
       th {
         background: #f1f1f1;
       }
-      a {
-        display: inline-block;
-        margin-top: 15px;
-        text-decoration: none;
-        color: #4e73df;
-        font-weight: bold;
+
+      .logout-btn {
+        margin-top: 20px;
+        width: 100%;
+        padding: 10px;
+        background: #e74a3b;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 15px;
+      }
+
+      .logout-btn:hover {
+        background: #c0392b;
+      }
+
+      .info p {
+        font-size: 18px;
+        margin: 6px 0;
+      }
+
+      .btn {
+        padding: 6px 12px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        color: #fff;
+        font-size: 13px;
+      }
+
+      .btn-edit {
+        background: #3498db;
+      }
+
+      .btn-edit:hover {
+        background: #2980b9;
+      }
+
+      .btn-delete {
+        background: #e74a3b;
+      }
+
+      .btn-delete:hover {
+        background: #c0392b;
+      }
+
+      .analytics {
+        margin-top: 30px;
+        background: #f1f1f1;
+        padding: 15px;
+        border-radius: 10px;
+      }
+
+      .excel-btn {
+        background: #27ae60;
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-bottom: 10px;
+      }
+
+      .excel-btn:hover {
+        background: #1e8449;
       }
     </style>
   </head>
-
   <body>
-    <div class="header">
-      <h2>Welcome, {{ request.user.username }}</h2>
+    <div class="dashboard-body">
+      <div class="header">
+        {% if request.user.is_superuser %}
+          <h2>Welcome to Cloudrule Attendance Admin</h2>
+        {% else %}
+          <h2>Welcome {{ request.user.username }}</h2>
+        {% endif %}
+
+        <div class="admin-actions">
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <!-- NORMAL USER -->
+        {% if attendance %}
+        <div class="info">
+          <p><b>Date:</b> {{ attendance.date }}</p>
+          <p><b>Day:</b> {{ attendance.day }}</p>
+          <p><b>Check In:</b> {{ attendance.check_in|date:"H:i:s" }}</p>
+          <p>
+            <b>Check Out:</b> {% if attendance.check_out %}
+            <p>{{ attendance.check_out|date:"H:i:s" }}</p>
+            {% endif %}
+          </p>
+          <p><b>Status:</b> {{ attendance.status }}</p>
+        </div>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="logout-btn" type="submit">Logout</button>
+        </form>
+        {% endif %}
+
+        <!-- SUPERUSER -->
+        {% if request.user.is_superuser %}
+        <div style="text-align: right; margin-bottom: 10px">
+          <form method="post" action="{% url 'export_excel' %}">
+            {% csrf_token %}
+            <button class="excel-btn" type="submit">Download Excel</button>
+          </form>
+        </div>
+
+        <h3>Employee Attendance</h3>
+        <table>
+          <tr>
+            <th>Employee</th>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+          {% for a in all_attendance %}
+          <tr>
+            <td>{{ a.employee.username }}</td>
+            <td>{{ a.date }}</td>
+            <td>{{ a.day }}</td>
+            <td>{{ a.check_in|date:"H:i:s" }}</td>
+            <td>{% if a.check_out %}{{ a.check_out|date:"H:i:s" }}{% endif %}</td>
+            <td>{{ a.status }}</td>
+            <td>
+              <a href="{% url 'edit_attendance' a.id %}" class="btn btn-edit">Edit</a>
+              <a href="{% url 'delete_attendance' a.id %}" onclick="return confirm('Are you sure?');" class="btn btn-delete">Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+
+        <div class="analytics">
+          <h4>Attendance Analytics</h4>
+          <p>Total Records: {{ analytics.total }}</p>
+          <p>Present: {{ analytics.present }}</p>
+          <p>Late: {{ analytics.late }}</p>
+          <p>Absent: {{ analytics.absent }}</p>
+
+          <canvas id="attendanceChart" style="max-width: 600px; margin-top: 20px"></canvas>
+            <script>
+const ctx = document.getElementById('attendanceChart').getContext('2d');
+
+const gradientGreen = ctx.createLinearGradient(0, 0, 0, 400);
+gradientGreen.addColorStop(0, 'rgba(46, 204, 113, 1)'); // top
+gradientGreen.addColorStop(1, 'rgba(46, 204, 113, 0.5)'); // bottom
+
+const gradientYellow = ctx.createLinearGradient(0, 0, 0, 400);
+gradientYellow.addColorStop(0, 'rgba(241, 196, 15, 1)');
+gradientYellow.addColorStop(1, 'rgba(241, 196, 15, 0.5)');
+
+const gradientRed = ctx.createLinearGradient(0, 0, 0, 400);
+gradientRed.addColorStop(0, 'rgba(231, 76, 60, 1)');
+gradientRed.addColorStop(1, 'rgba(231, 76, 60, 0.5)');
+
+const attendanceChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['Present', 'Late', 'Absent'],
+    datasets: [{
+      label: 'Number of Employees',
+      data: [{{ analytics.present }}, {{ analytics.late }}, {{ analytics.absent }}],
+      backgroundColor: [gradientGreen, gradientYellow, gradientRed],
+      borderColor: [ 'rgba(46, 204, 113, 1)', 'rgba(241, 196, 15, 1)', 'rgba(231, 76, 60, 1)'],
+      borderWidth: 2,
+      borderSkipped: false, // makes full 3D block feel
+      hoverBorderWidth: 4,
+      hoverBorderColor: 'rgba(0,0,0,0.3)',
+      barPercentage: 0.6,
+      categoryPercentage: 0.6,
+      borderRadius: 6 // rounded 3D bars
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      title: { display: true, text: 'Employee Attendance Status' }
+    },
+    scales: {
+      x: { 
+        grid: { display: false }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+        grid: { color: '#ccc' }
+      }
+    }
+  }
+});
+</script>
+
+        </div>
+        {% endif %}
+      </div>
     </div>
 
-    <div class="card">
-      <!-- Your Attendance Info -->
-      <div class="row">
-        <span class="label">Date</span>
-        <span class="value">{{ attendance.date }}</span>
-        <div class="clear"></div>
-      </div>
 
-      <div class="row">
-        <span class="label">Day</span>
-        <span class="value">{{ attendance.day }}</span>
-        <div class="clear"></div>
-      </div>
-
-      <div class="row">
-        <span class="label">Check In</span>
-        <span class="value">{{ attendance.check_in|date:"H:i:s" }}</span>
-        <div class="clear"></div>
-      </div>
-
-      <div class="row">
-        <span class="label">Status</span>
-        <span
-          class="status {% if attendance.status == 'Late' %}late{% else %}present{% endif %}"
-        >
-          {{ attendance.status }}
-        </span>
-      </div>
-
-      <!-- Superuser Dashboard -->
-      {% if request.user.is_superuser %}
-      <h3>Superuser Dashboard</h3>
-      <p>Total users logged in today: {{ logged_in_users_count }}</p>
-
-      <table>
-        <tr>
-          <th>Employee</th>
-          <th>Date</th>
-          <th>Day</th>
-          <th>Check In</th>
-          <th>Check Out</th>
-          <th>Status</th>
-        </tr>
-        {% for a in all_attendance %}
-        <tr>
-          <td>{{ a.employee.username }}</td>
-          <td>{{ a.date }}</td>
-          <td>{{ a.day }}</td>
-          <td>{{ a.check_in|date:"H:i:s" }}</td>
-          <td>
-            {% if a.check_out %} {{ a.check_out|date:"H:i:s" }} {% endif %}
-          </td>
-          <td>{{ a.status }}</td>
-        </tr>
-        {% endfor %}
-      </table>
-
-      <a href="{% url 'export_excel' %}">Download Excel</a>
-      {% endif %}
-
-      <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit" class="logout-btn">Logout</button>
-      </form>
-    </div>
   </body>
 </html>
