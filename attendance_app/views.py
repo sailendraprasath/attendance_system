@@ -83,6 +83,7 @@ def dashboard(request):
 
 
 # ================= LOGOUT =================
+
 @csrf_exempt
 @login_required
 def logout_view(request):
@@ -90,25 +91,23 @@ def logout_view(request):
         if not request.user.is_superuser:
             today = datetime.date.today()
             try:
-                attendance = Attendance.objects.get(employee=request.user, date=today)
+                attendance = Attendance.objects.get(
+                    employee=request.user,
+                    date=today
+                )
+
+                # Save actual logout time
                 if not attendance.check_out:
-                    now = timezone.localtime(timezone.now())
-                    default_logout_time = timezone.make_aware(
-                        datetime.datetime.combine(today, datetime.time(18, 15))
-                    )
-                    # Compare only times
-                    if now.time() > datetime.time(18, 0):
-                        attendance.check_out = now
-                    else:
-                        attendance.check_out = default_logout_time
+                    attendance.check_out = timezone.localtime(timezone.now())
                     attendance.save()
+
             except Attendance.DoesNotExist:
                 pass
 
         logout(request)
         return redirect('login')
-    return HttpResponse('Method not allowed', status=405)
 
+    return HttpResponse('Method not allowed', status=405)
 
 # ================= EXPORT EXCEL =================
 @csrf_exempt
